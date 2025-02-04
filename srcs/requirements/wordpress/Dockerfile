@@ -2,6 +2,8 @@ FROM debian:bullseye
 
 
 # Install necessary packages: wget for downloading, php-fpm for PHP backend, php-mysql for database interaction
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 	wget \
 	php-mysql \

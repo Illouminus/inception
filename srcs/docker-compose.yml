@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   nginx:
+    container_name: nginx
     build:
       context: ./requirements/nginx/
     ports:
@@ -9,11 +10,12 @@ services:
     depends_on:
       - wordpress
     networks:
-      - app-network
+      - inception
     volumes:
-      - wp_data:/var/www/html
+      - wordpress:/var/www/html/wordpress
 
   mariadb:
+    container_name: mariadb
     build:
       context: ./requirements/mariadb/
     ports:
@@ -24,9 +26,9 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql
+      - db:/var/lib/mysql
     networks:
-      - app-network
+      - inception
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}" ]
       interval: 10s
@@ -35,6 +37,7 @@ services:
       start_period: 20s
 
   wordpress:
+    container_name: wordpress
     build:
       context: ./requirements/wordpress/
     expose:
@@ -43,7 +46,7 @@ services:
       mariadb:
         condition: service_healthy
     networks:
-      - app-network
+      - inception
     environment:
       DB_HOST: ${DB_HOST}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -56,13 +59,24 @@ services:
       WP_USER_PASSWORD: ${WP_USER_PASSWORD}
       WP_USER_EMAIL: ${WP_USER_EMAIL}
     volumes:
-      - wp_data:/var/www/html
+      - wordpress:/var/www/html/wordpress
     restart: always
 
 volumes:
-  db_data:
-  wp_data:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/ebaillot/data/wordpress
+      o: bind
+  db:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/ebaillot/data/mariadb
+      o: bind
+  
 
 
 networks:
-  app-network:
+  inception:

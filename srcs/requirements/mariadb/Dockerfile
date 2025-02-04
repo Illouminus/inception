@@ -11,6 +11,7 @@ COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
 
 # Copy MariaDB initialization script
 COPY tools/init-db.sh /init-db.sh
+RUN chmod +x /init-db.sh
 
 # Create directories for MariaDB and set permissions
 RUN mkdir -p /var/lib/mysql /var/run/mysqld && \
@@ -23,4 +24,4 @@ RUN mariadb-install-db --user=mysql --datadir=/var/lib/mysql --basedir=/usr
 # Expose MariaDB port
 EXPOSE 3306
 
-ENTRYPOINT ["bash", "/init-db.sh"]
+ENTRYPOINT ["/init-db.sh"]

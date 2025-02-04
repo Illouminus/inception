@@ -2,25 +2,20 @@
 
 set -e
 
-# Проверяем, существует ли системная база данных MariaDB
 if [ ! -d "/var/lib/mysql/mysql" ]; then
     echo "Initializing database..."
     
-    # Устанавливаем владельца и права для MariaDB
     chown -R mysql:mysql /var/lib/mysql
     chmod 750 /var/lib/mysql
 
-    # Инициализация базы данных
     mariadb-install-db --user=mysql --datadir=/var/lib/mysql --basedir=/usr
 
     echo "Database initialized."
 fi
 
-# Проверяем, создана ли пользовательская база данных
 if [ ! -d "/var/lib/mysql/${MYSQL_DATABASE}" ]; then
     echo "Setting up initial database..."
 
-    # Создаём временный SQL файл
     cat << EOF > /tmp/create_db.sql
 USE mysql;
 FLUSH PRIVILEGES;
@@ -35,12 +30,10 @@ GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
 FLUSH PRIVILEGES;
 EOF
 
-    # Запускаем MariaDB в безопасном режиме и применяем SQL
     mysqld --user=mysql --bootstrap < /tmp/create_db.sql
     rm -f /tmp/create_db.sql
 
     echo "Initial database setup complete."
 fi
 
-# Запускаем MariaDB
 exec mysqld --user=mysql
